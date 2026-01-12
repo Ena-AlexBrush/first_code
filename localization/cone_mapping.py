@@ -27,7 +27,44 @@ def cones_vehicle_to_global(
             })
     return pl.DataFrame(rows)
 
-##Old code before refactor to function
+#Filtering Cone Observations
+def filter_cone_outliers(cones_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    First-pass cone filtering to remove obvious outliers.
+    Assumes:
+      x_v_m: forward distance in meters (vehicle frame)
+      y_v_m: lateral distance in meters (vehicle frame, left positive)
+    """
+    return (
+        cones_df
+        .filter(pl.col("x_v_m").is_finite() & pl.col("y_v_m").is_finite())
+        .filter(pl.col("x_v_m").abs() < 60.0) #Cone is more than 60 meters ahead or behind is removed
+        .filter(pl.col("y_v_m").abs() < 20.0) #Cone is more than 20 meters to the left or right is removed
+    )
+
+def bin_and_average_cones(cones_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Collapse nearby cone detections (per pose/frame) into one averaged cone.
+    Assumes:
+      - pose_id: which pose/frame this detection belongs to
+      - x_v_m, y_v_m: vehicle-frame coordinates in meters
+    """
+    df = (
+        cones_df
+        .with_columns([
+            (pl.col("x_v_m") * 2).round().alias("x_bin"),  #0.5 m bins
+            (pl.col("y_v_m") * 2).round().alias("y_bin"),
+        ])
+        .group_by(["pose_id", "x_bin", "y_bin"])
+        .agg([
+            pl.mean("x_v_m").alias("x_v_m_avg"),
+            pl.mean("y_v_m").alias("y_v_m_avg"),
+            pl.len().alias("hit_count"),
+        ])
+    )
+    return df
+
+##Old code for cones_vehicle_to_global before refactor to function
 
 # #This list will store all cone observations
 # #Each entry corresponds to one cone seen at one pose

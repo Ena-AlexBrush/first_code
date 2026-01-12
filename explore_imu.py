@@ -8,7 +8,6 @@ print(df.head()) #Return the first 5 rows of the dataframe
 
 
 #2D map:
-
 imu_df = df.select([
         pl.col("General.Time (millis)").alias("time_ms"),
         pl.col("ISM330.Accel X (milli-g)").alias("ax_mg"),
