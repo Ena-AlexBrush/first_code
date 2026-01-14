@@ -16,11 +16,9 @@ def main():
     Main function - configure and run pipeline.
     """
     
-    # ========================================================================
     # CONFIGURATION
-    # ========================================================================
     
-    # Camera mounting configuration (MEASURE THESE ON YOUR CAR!)
+    # Camera mounting configuration (MEASURE THESE ON THE CAR!)
     camera_config = {
         'x_camera': 0.5,                    # 50cm forward from vehicle center
         'y_camera': 0.0,                    # Centered on vehicle

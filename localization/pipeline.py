@@ -44,7 +44,7 @@ class LocalizationPipeline:
         Returns:
             DataFrame with columns: time_s, x, y, theta
         """
-        print("📍 Step 1: Processing IMU data...")
+        print("Step 1: Processing IMU data...")
         
         # Load raw IMU data
         imu_df = load_imu_data(imu_csv_path)
@@ -52,7 +52,7 @@ class LocalizationPipeline:
         # Estimate pose (this will be replaced by Kimera later)
         self.pose_df = estimate_pose_from_imu(imu_df, v_forward)
         
-        print(f"   ✓ Estimated {len(self.pose_df)} vehicle poses")
+        print(f"Estimated {len(self.pose_df)} vehicle poses")
         return self.pose_df
     
     def process_detections(self, 
@@ -70,7 +70,7 @@ class LocalizationPipeline:
         Returns:
             (N x 3) array of cone positions in camera frame [x, y, z]
         """
-        print("🎯 Step 2: Processing cone detections...")
+        print("Step 2: Processing cone detections...")
         
         # Parse YOLACT detections
         detections_df = parse_yolact_detections(yolact_output)
@@ -87,8 +87,8 @@ class LocalizationPipeline:
             depth = depth_map.get_depth_at_pixel(u, v)
             
             # Use pinhole camera model to backproject
-            x_cam = (u - camera_intrinsics['cx']) * depth / camera_intrinsics['fx']
-            y_cam = (v - camera_intrinsics['cy']) * depth / camera_intrinsics['fy']
+            x_cam = (u - camera_intrinsics['cx']) * depth / camera_intrinsics['fx'] # x = (u - cx) * z / fx is the math
+            y_cam = (v - camera_intrinsics['cy']) * depth / camera_intrinsics['fy'] # y = (v - cy) * z / fy is the math
             z_cam = depth
             
             cones_camera_3d.append([x_cam, y_cam, z_cam])
@@ -108,7 +108,7 @@ class LocalizationPipeline:
         Returns:
             (N x 2) array in vehicle frame (ground plane)
         """
-        print("📷 Step 3: Transforming to vehicle frame...")
+        print("Step 3: Transforming to vehicle frame...")
         
         cones_vehicle_2d = self.camera_transform.camera_to_vehicle_2d(cones_camera_3d)
         
@@ -180,7 +180,7 @@ class LocalizationPipeline:
         global_map = self.map_to_global_frame(cones_vehicle_2d)
         
         print("\n" + "=" * 70)
-        print("✅ PIPELINE COMPLETE")
+        print("PIPELINE COMPLETE")
         print("=" * 70)
         
         return global_map
